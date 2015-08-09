@@ -5,7 +5,7 @@ Note: The game is still work in progress. I have to see how much
 I can achieve before reaching the 8192 tokens limit for code.
 
 # Cartridge
-![ScreenShot](https://raw.github.com/SantiagoSanchez/Slime-Quest/master/slime_quest.p8.png)
+![ScreenShot](https://raw.githubusercontent.com/SanchezSobrino/Slime-Quest/master/slime_quest.p8.png)
 
 # License
 
