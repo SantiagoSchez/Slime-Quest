@@ -4,9 +4,6 @@ __lua__
 -- slime quest
 -- by sanchezsobrino
 
-debug_enabled = false
-current_room = {2,1}
-
 -- player stuff
 function make_player()
  local pl = {}
@@ -16,8 +13,8 @@ function make_player()
  pl.spd   = 1
  pl.mv    = false
  pl.hp    = 10
- pl.dirx  = 0  -- 0 r, 1 l
- pl.diry  = 0  -- 0 d, 1 u
+ pl.dirx  = 1  -- 1 r, -1 l
+ pl.diry  = 1  -- 1 d, -1 u
  pl.flip  = false
  pl.anim_d= 1
  pl.c     = 0
@@ -33,10 +30,10 @@ function handle_input()
  if (btn(0)) then
   tmp_x -= pl.spd
   
-  if (pl.dirx == 0) then
+  if (pl.dirx == 1) then
    pl.flip = true
   end
-  pl.dirx = 1
+  pl.dirx = -1
   
   if (is_solid(tmp_x,tmp_y+2) or 
       is_solid(tmp_x,tmp_y+7)) then
@@ -51,10 +48,10 @@ function handle_input()
  if (btn(1)) then 
   tmp_x += pl.spd
   
-  if (pl.dirx == 1) then
+  if (pl.dirx == -1) then
    pl.flip = false
   end
-  pl.dirx = 0
+  pl.dirx = 1
   
   if (is_solid(tmp_x+7,tmp_y+2) or 
       is_solid(tmp_x+7,tmp_y+7)) then
@@ -68,7 +65,7 @@ function handle_input()
  
  if (btn(2)) then 
   tmp_y -= pl.spd
-  pl.diry = 1
+  pl.diry = -1
   
   if (is_solid(tmp_x,tmp_y+2) or 
       is_solid(tmp_x+7,tmp_y+2)) then
@@ -82,7 +79,7 @@ function handle_input()
  
  if (btn(3)) then
   tmp_y += pl.spd
-  pl.diry = 0
+  pl.diry = 1
   
   if (is_solid(tmp_x,tmp_y+7) or 
       is_solid(tmp_x+7,tmp_y+7)) then
@@ -93,6 +90,18 @@ function handle_input()
   
   pl.mv = true
  end
+ 
+ -- if (btnp(4)) then
+ --  sp = get_up_spr
+ --  if (sp == 36) then
+ --   add_dialog()
+ --  end
+ -- end
+end
+
+function get_up_spr()
+ return get_spr(pl.x+4,
+                pl.y+(pl.diry*8))
 end
 
 function handle_room_change()
@@ -230,7 +239,7 @@ function update_timers()
 end
 
 function interval(c,d,callback)
-	if (c < d) then
+ if (c < d) then
   c += 1
  else
   c = 0
@@ -240,15 +249,107 @@ function interval(c,d,callback)
  return c
 end
 
+-- dialogs stuff
+function add_dialog(text)
+ local dl = {}
+ dl.x1 = 8
+ dl.x2 = 120
+ dl.y1 = 16
+ dl.y2 = 40
+ dl.off = 3
+ if (pl.y < 64) then
+  dl.y1 = 88
+  dl.y2 = 112
+ end
+ dl.colour = 2
+ dl.lines = {"", "", ""}
+ local l = 1
+ for i=1,#text,27 do
+  for j=1,27 do
+   dl.lines[l] = dl.lines[l] .. sub(text,i+j-1,i+j-1)
+  end
+  l += 1
+ end
+ 
+ add(dialogs, dl)
+end
+
+function update_dialogs()
+ for d in all(dialogs) do
+  d.active = true
+  local showing = true
+  local l = 1
+  local c = 1
+  local text = {"", "", ""}
+  while (d.active) do
+   rectfill(d.x1+1,d.y1+1,
+            d.x2+1,d.y2+1,5)
+   rect(d.x1,d.y1,d.x2,d.y2,14)
+   rectfill(d.x1+1,d.y1+1,
+            d.x2-1,d.y2-1,15)
+   
+   if (showing) then
+    local cur = sub(d.lines[l],c,c)
+    if (cur == nil) then
+     showing = false
+    else
+     text[l] = text[l] .. cur
+     if (c == 27 and l < 3) then
+      l += 1
+      c = 0
+     end
+     if (l == 3 and c == #d.lines[3]) then
+      showing = false
+     end
+     c += 1
+    end
+   end
+   
+   for i=1,#text do
+    print(text[i],d.x1+d.off,
+          d.y1+d.off+(i*7-7),d.colour)
+   end
+
+   flip()
+   
+   if (btnp(4)) then
+    if (showing) then
+     showing = false
+     for i=1,#d.lines do
+      text[i] = d.lines[i]
+     end
+    else
+     d.active = false
+     del(dialogs,d)
+    end
+   end
+  end
+ end
+end
+
+-- entities stuff
+function make_signs()
+ return {{"                           " ..
+          "     -- lake tirtus --     " ..
+          "",
+          336,96}}
+end
+
 -- pico-8 callbacks
 function _init()
  pl = make_player()
+ signs = make_signs()
  timers = {}
+ dialogs = {}
+ current_room = {2,1}
+ 
+ debug_enabled = false
 end
 
 function _update()
  update_player()
  update_timers()
+ update_dialogs()
 end
 
 function _draw()
@@ -267,9 +368,9 @@ function debug()
  local r = current_room
  
  rectfill(0,112,128,128,0)
- print(pl.x..","..pl.y,2,114,7)
- --print(r[1]..","..r[2],2,122,7)
- print(pl.c2,2,122,7)
+ print(pl.x+(128*r[1])..","..pl.y+(128*r[2]),2,114,7)
+ print(r[1]..","..r[2],2,122,7)
+ --print(get_spr(pl.x,pl.y-1),2,122,7)
 end
 
 __gfx__
@@ -417,7 +518,7 @@ __map__
 1313131313131313131313131313131313131313131313131313131313131313131734343434343434343431131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313
 1313131313131313131313131313131313131313131313131313131313131313131734343434343434343431131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313
 1313131313131313131313131313131313131313131313131313131313131313171734343434343434343c13131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313
-1313131313131313131313131313131313131313131313131313131313131313131734353434333333132413131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313
+1313131313131313131313131313131313131313131313131313131313131313131734353434333333131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313
 131313131313131313131313131313131313131313131313131313131313131313133b34343c131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313
 1313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313
 1313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313
