@@ -5,12 +5,12 @@ Note: The game is still work in progress. I have to see how much
 I can achieve before reaching the 8192 tokens limit for code.
 
 # Cartridge
-![ScreenShot](https://raw.githubusercontent.com/SanchezSobrino/Slime-Quest/master/slime_quest.p8.png)
+![ScreenShot](https://raw.githubusercontent.com/SantiagoSchez/Slime-Quest/refs/heads/master/slime_quest.p8.png)
 
 # License
 
 > Slime Quest - A PICO-8 fantasy ARPG
-> Copyright (C) 2015 Santiago Sánchez Sobrino
+> Copyright (C) 2015 Santiago SÃ¡nchez Sobrino
 > 
 > This program is free software: you can redistribute it and/or modify
 > it under the terms of the GNU General Public License as published by
